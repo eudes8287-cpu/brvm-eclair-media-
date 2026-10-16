@@ -85,9 +85,24 @@ def scene(d,sc,t,idx):
         cy=1120; d.rounded_rectangle(((W-w)/2,cy,(W+w)/2,cy+h),radius=60,fill=ORANGE)
         ct=sc.get("cta","Abonne-toi ➜"); ct="ABONNE-TOI"; ff=fnt("ExtraBold",56)
         d.text(((W-tw(d,ct,ff))/2,cy+h/2-34),ct,font=ff,fill=NAVY)
-scs=spec["scenes"]; total=sum(s["dur"] for s in scs); N=int(total*FPS)
+scs=spec["scenes"]; HERE=os.path.dirname(os.path.abspath(__file__)); vo=[]
+if any(s.get("voice") for s in scs):
+    sys.path.insert(0,HERE); import make_voice
+    for i,s in enumerate(scs):
+        if s.get("voice"):
+            f=f"{out}.v{i}.wav"; dv=make_voice.synth(s["voice"],f,spec.get("speed",1.0)); s["dur"]=max(s["dur"],dv+0.8); vo.append((i,f))
+total=sum(s["dur"] for s in scs); N=int(total*FPS)
 mus=out+".wav"
-subprocess.run([sys.executable,"-I",os.path.join(os.path.dirname(os.path.abspath(__file__)),"make_music.py"),mus,str(total+0.5),str(spec.get("bpm",108))],check=True)
+subprocess.run([sys.executable,"-I",os.path.join(HERE,"make_music.py"),mus,str(total+0.5),str(spec.get("bpm",108))],check=True)
+if vo:
+    import numpy as np, soundfile as sf
+    m,sr=sf.read(mus); m=m if m.ndim==1 else m.mean(1); m=m*0.30; tr=m.copy()
+    for i,f in vo:
+        v,vsr=sf.read(f); st=int((sum(x["dur"] for x in scs[:i])+0.25)*sr)
+        if vsr!=sr:
+            v=np.interp(np.linspace(0,len(v)-1,int(len(v)*sr/vsr)),np.arange(len(v)),v)
+        e=min(len(tr),st+len(v)); tr[st:e]+=v[:e-st]*1.0; os.remove(f)
+    tr=np.clip(tr,-1,1); sf.write(mus,tr,sr)
 p=subprocess.Popen(["ffmpeg","-y","-loglevel","error","-f","rawvideo","-pix_fmt","rgb24","-s",f"{W}x{H}","-r",str(FPS),"-i","-","-i",mus,"-c:v","libx264","-preset","medium","-crf","23","-pix_fmt","yuv420p","-c:a","aac","-b:a","160k","-shortest","-movflags","+faststart",out],stdin=subprocess.PIPE)
 for fr in range(N):
     t=fr/FPS; acc=0
