@@ -70,7 +70,7 @@ def scene(d,sc,t,idx):
             try: num=float(big.replace(" ","").replace(",",".")); isnum=True
             except: isnum=False
             if isnum:
-                v=num*p; s=f"{v:,.0f}".replace(","," ") if num>=100 else (f"{v:.1f}".replace(".",",") if "," in big else f"{v:.0f}")
+                v=num*p; s=(f"{v:,.2f}".replace(",","\u202f").replace(".",",") if "," in big else f"{v:,.0f}".replace(","," ")) if num>=100 else (f"{v:.1f}".replace(".",",") if "," in big else f"{v:.0f}")
             else: s=big
             f=fnt("ExtraBold",150); sz=150
             while tw(d,s,f)>940 and sz>70: sz-=10; f=fnt("ExtraBold",sz)
