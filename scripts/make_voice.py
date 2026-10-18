@@ -18,14 +18,7 @@ def say_num(m):
         return num2words(int(v),lang="fr")
     except Exception: return m.group(0)
 def normalize(x):
-    import re
-    x=x.replace("−","moins ").replace("-"+"",'-') if False else x.replace("−","moins ")
-    x=re.sub(r"(?<![\w])-(?=\d)","moins ",x)
-    x=re.sub(r"(\d)[ \u202f](?=\d{3}\b)",r"\1",x)
-    x=re.sub(r"\d+(?:[.,]\d+)?",say_num,x)
-    x=x.replace("%","pour cent")
-    for k,v in ACR.items(): x=re.sub(r"\b"+k+r"\b",v,x)
-    return x
+    return x.replace("\u2212","moins ")
 def chunks(text):
     import re
     out=[]
@@ -39,14 +32,14 @@ def chunks(text):
             if cur: out.append(cur)
         else: out.append(s)
     return out
-def synth(text,out,speed=0.92):
+def synth(text,out,speed=1.03):
     import numpy as np
     ensure()
     from kokoro_onnx import Kokoro; import soundfile as sf
     k=Kokoro(f"{D}/kokoro-v1.0.int8.onnx",f"{D}/voices-v1.0.bin")
     parts=chunks(text); segs=[]; sr=24000
     for x in parts:
-        sp=speed-0.03 if len(x.split())<=4 else speed
+        sp=speed
         a,sr=k.create(normalize(x),voice="ff_siwis",speed=sp,lang="fr-fr")
         a=np.trim_zeros(a.copy(),"fb") if False else a.copy()
         n=int(sr*0.02); a[:n]*=np.linspace(0,1,n); a[-n:]*=np.linspace(1,0,n)
