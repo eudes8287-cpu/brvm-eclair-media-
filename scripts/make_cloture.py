@@ -35,5 +35,5 @@ for x,title,rows,cc in ((60,"PLUS FORTES HAUSSES",D["ups"],GREEN),(550,"PLUS FOR
         d.text((x+28,y),n,font=font("SemiBold",23),fill=OFF); d.text((x+28,y+30),cours+" FCFA",font=font("Regular",20),fill=MUTED)
         fv=font("ExtraBold",30); d.text((x+470-28-tw(d,v,fv),y+6),v,font=fv,fill=cc); y+=60
 d.text((60,995),D.get("source",""),font=font("Medium",20),fill=MUTED)
-f=font("Bold",20); t="Information, pas un conseil en investissement"; d.text((W-60-tw(d,t,f),995),t,font=f,fill=ORANGE)
+f=font("Bold",20); t=DISCLAIMER; d.text((W-60-tw(d,t,f),995),t,font=f,fill=ORANGE)
 img.save(sys.argv[2])

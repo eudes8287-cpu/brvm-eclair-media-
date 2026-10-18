@@ -9,6 +9,10 @@ sys.path.insert(0,os.path.dirname(os.path.abspath(__file__)))
 from common import *
 spec=json.load(open(sys.argv[1])); out=sys.argv[2]
 W,H,FPS=1080,1920,30
+TH={"teal":((8,60,66),(14,84,92),(250,204,21),(150,200,205)),"violet":((38,26,92),(58,42,126),ORANGE,(176,166,222)),
+"emerald":((6,62,46),(12,88,66),(255,184,40),(150,208,186)),"wine":((82,22,44),(110,36,64),ORANGE,(222,170,186))}
+if spec.get("theme","navy") in TH: NAVY,NAVY2,ORANGE,MUTED=TH[spec["theme"]]
+
 def eo(x): x=max(0,min(1,x)); return 1-(1-x)**3
 def eb(x):
     x=max(0,min(1,x)); c=1.70158; return 1+(c+1)*(x-1)**3+c*(x-1)**2
@@ -31,7 +35,7 @@ def brand(d,t):
     bolt(d,60,60,70,ORANGE); d.text((150,66),"BRVM ÉCLAIR",font=fnt("ExtraBold",44),fill=OFF)
 def footer(d,prog):
     d.rectangle((0,H-14,int(W*prog),H),fill=ORANGE)
-    f=fnt("Bold",26); t="Information, pas un conseil en investissement"
+    f=fnt("Bold",26); t=DISCLAIMER
     d.text(((W-tw(d,t,f))/2,H-110),t,font=f,fill=MUTED)
 def pill(d,txt,y,t0,t):
     f=fnt("Bold",34); w=tw(d,txt,f)+60; a=eb((t-t0)/0.45)

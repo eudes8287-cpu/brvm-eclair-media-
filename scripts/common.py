@@ -1,5 +1,6 @@
 from PIL import Image, ImageDraw, ImageFont
 NAVY=(11,31,58); NAVY2=(20,46,82); ORANGE=(255,122,26); OFF=(245,241,232)
+DISCLAIMER="Ceci est une information, pas un conseil en investissement"
 GREEN=(34,197,94); RED=(239,68,68); MUTED=(150,168,196)
 FD="/usr/share/fonts/opentype/inter/"
 def font(w,s): return ImageFont.truetype(FD+f"Inter-{w}.otf",s)
@@ -21,5 +22,5 @@ def header(d,W,right=""):
         f=font("Medium",26); d.text((W-60-tw(d,right,f),50),right,font=f,fill=MUTED)
 def footer(d,W,H,source=""):
     if source: d.text((60,H-85),source,font=font("Medium",22),fill=MUTED)
-    f=font("Bold",20); t="Information, pas un conseil en investissement"
+    f=font("Bold",20); t=DISCLAIMER
     d.text((W-60-tw(d,t,f),H-50),t,font=f,fill=ORANGE)
