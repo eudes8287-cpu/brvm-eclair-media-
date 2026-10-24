@@ -1,0 +1,22 @@
+{
+  "id": "001_plus_petit_pays",
+  "lang": "fr",
+  "category": "PAYS & VILLES",
+  "bpm": 100,
+  "speed": 0.97,
+  "scenes": [
+    {"type": "hook", "title": "Quel est le plus petit pays du monde ?",
+     "voice": "Quel est le plus petit pays du monde ?"},
+    {"type": "reveal", "title": "La Cité du Vatican",
+     "voice": "C'est la Cité du Vatican, enclavée au cœur de Rome."},
+    {"type": "stat", "title": "Sa superficie", "value": 0.44, "unit": "km²", "sub": "soit 44 hectares",
+     "voice": "Sa superficie : à peine zéro virgule quarante-quatre kilomètre carré, soit quarante-quatre hectares.",
+     "caption": "Sa superficie : à peine 0,44 km², soit 44 hectares."},
+    {"type": "compare", "title": "Pour se représenter", "big": "≈ 60", "label": "terrains de football", "count": 60,
+     "voice": "C'est l'équivalent d'environ soixante terrains de football.",
+     "caption": "C'est l'équivalent d'environ 60 terrains de football."},
+    {"type": "outro", "title": "Un fait surprenant chaque jour",
+     "voice": "Abonne-toi à Synthèse pour un fait surprenant chaque jour.",
+     "caption": "Abonne-toi à Synthèse pour un fait surprenant chaque jour."}
+  ]
+}
