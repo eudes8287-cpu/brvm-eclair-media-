@@ -42,3 +42,12 @@ Remplace les étapes 3 à 8 ci-dessus pour les vidéos de type « sujet unique �
 9. Vérification : relire les éléments envoyés (`buffer_new_sent_item`, organizationId + channelId en dynamic_properties) ; le résultat est volumineux : l'enregistrer dans un fichier et lire les 3 premiers éléments en Python. Noter le lien TikTok et les statistiques (vues, j'aime, commentaires) dans LOG.md.
 10. Mise à jour : ligne du jour de PLAN.md passée à « fait », ligne ajoutée à LOG.md, commit et push.
 Chaque lundi : relever via Buffer les statistiques des vidéos de la semaine (même lecture que l'étape 9), écrire un bilan de 5 lignes dans LOG.md et ajuster PLAN.md.
+
+## RÈGLES QUALITÉ v2.1 (10/11/2026, retour d'Eudes sur « Paris 6 secrets »)
+Constat : voix trop robotique ; 90 % d'images de tour Eiffel ; plans ne correspondant pas au texte (pont → autre édifice, musée → extérieur).
+1. VOIX : `pip install -q --break-system-packages edge-tts` ; deep_dive.py utilise la voix neuronale `fr-FR-VivienneMultilingualNeural` (champ spec `edge_voice`, `rate`) en passant par le proxy de l'agent (HTTPS_PROXY, déjà géré). Repli automatique sur Kokoro si indisponible. Phrases courtes, chiffres écrits en toutes lettres.
+2. PLUSIEURS PLANS PAR FAIT : chaque segment a `shots` = 2 à 3 plans (vidéo .mp4 ou PHOTO .jpg avec zoom lent), durée répartie via `w`. Photos : orshot_search_stock_media type photo + use_stock_media, curl https://storage.orshot.com/stock/pixabay/photo/ID.jpg.
+3. CORRESPONDANCE STRICTE : pour chaque fait, chercher le lieu/objet exact (« louvre interior gallery paintings », « paris bridge seine », « paris catacombs skulls »…). Regarder une image de CHAQUE plan (planche contact) et vérifier qu'elle illustre le fait ; sinon chercher un autre plan. Interdit : plan d'un autre monument ou d'un autre pays.
+4. VARIÉTÉ : jamais plus d'un plan sur quatre montrant le même monument/sujet ; alterner vidéos et photos ; aucun plan répété dans deux faits.
+5. Contrôle final : 8 images extraites (une par fait au moins), comparées au texte du fait.
+Exemple : synthese/specs/002b_paris_v2_template.json (chemins CLIPS/ à remplacer par le dossier local).

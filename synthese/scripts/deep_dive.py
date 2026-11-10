@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Synthèse — format « sujet unique » (45-65 s) : clips libres + voix Kokoro + musique + sous-titres karaoké.
 Usage : python3 deep_dive.py spec.json out.mp4
-Spec : {"lang","speed","bpm","brand","segments":[{"clip","ss","fx","voice","caption","num","title","big"}]}
+Spec : {"lang","engine"(edge|kokoro),"edge_voice","rate","bpm","brand","segments":[{"shots":[{"clip"(mp4 ou jpg),"ss","fx","w"}] (ou clip/ss/fx),"voice","caption","num","title","big"}]}
  - clip : chemin du clip (Pixabay via Orshot, 1920x1080 ou 1354x720) ; ss : début dans le clip (s) ;
    fx : centre horizontal du cadrage vertical (0..1) ; num/title/big : habillage (facultatifs).
 """
@@ -31,6 +31,24 @@ def karaoke(text, vd):
     return " ".join(out)
 
 
+def tts_edge(text, wav, voice="fr-FR-VivienneMultilingualNeural", rate="+0%"):
+    """Voix neuronale Microsoft (edge-tts) via le proxy de l'agent ; renvoie la durée, ou None si indisponible."""
+    import asyncio, edge_tts, soundfile as sf
+    mp3 = wav + ".mp3"
+    async def go():
+        c = edge_tts.Communicate(text, voice, rate=rate, proxy=os.environ.get("HTTPS_PROXY") or None)
+        await c.save(mp3)
+    for _ in range(3):
+        try:
+            asyncio.run(go())
+            if os.path.getsize(mp3) > 2000:
+                subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", mp3, "-ar", "24000", "-ac", "1", wav], check=True)
+                d, r = sf.read(wav); return len(d) / r
+        except Exception as e:
+            print("edge-tts retry:", e)
+    return None
+
+
 def gradient(path):
     y = np.arange(H, dtype=np.float32)[:, None]
     top = np.clip(1 - y / 620, 0, 1) ** 1.4 * 0.70
@@ -50,30 +68,53 @@ def main():
     import soundfile as sf
     for i, s in enumerate(segs):
         f = f"{tmp}/v{i}.wav"
-        s["vd"] = synth(s["voice"], f, voice, vl, spec.get("speed", 0.97)); s["vf"] = f
+        vd = None
+        if spec.get("engine", "edge") == "edge":
+            vd = tts_edge(s["voice"], f, spec.get("edge_voice", "fr-FR-VivienneMultilingualNeural" if lang == "fr" else "en-US-AvaMultilingualNeural"), spec.get("rate", "+0%"))
+        if vd is None:
+            vd = synth(s["voice"], f, voice, vl, spec.get("speed", 0.97))
+        s["vd"] = vd; s["vf"] = f
         s["dur"] = s["vd"] + 0.2 + (0.8 if i == len(segs) - 1 else 0.38)
     total = sum(s["dur"] for s in segs)
 
-    # --- segments vidéo verticaux (cadrage + léger panoramique)
+    # --- segments vidéo verticaux : plusieurs plans par fait (vidéo ou photo avec zoom lent)
     parts = []
+    PHOTO = (".jpg", ".jpeg", ".png", ".webp")
     for i, s in enumerate(segs):
-        o = f"{tmp}/s{i}.mp4"
-        pr = subprocess.run(["ffprobe", "-v", "error", "-select_streams", "v:0", "-show_entries",
-                             "stream=width,height,duration", "-of", "json", s["clip"]], capture_output=True, text=True)
-        st = json.loads(pr.stdout)["streams"][0]; cw, ch = int(st["width"]), int(st["height"])
-        avail = max(0.5, float(st["duration"]) - s.get("ss", 0))
-        slow = max(1.0, min(1.35, s["dur"] / avail))      # ralentit un peu si le clip est trop court
-        sh = 2100; sw = int(cw * sh / ch) // 2 * 2
-        fx = s.get("fx", 0.5); span = sw - W
-        x0 = max(0, min(span, int(fx * sw - W / 2)))
-        pan = 70 * (1 if i % 2 == 0 else -1)
-        xe = f"max(0,min({span},{x0}+({pan})*t/{s['dur']:.2f}))"
-        vf = (f"setpts={slow:.3f}*PTS,scale={sw}:{sh},crop={W}:{H}:x='{xe}':y='({sh}-{H})/2',"
-              f"fps={FPS},tpad=stop_mode=clone:stop_duration=2,trim=duration={s['dur']:.3f},setpts=PTS-STARTPTS,"
-              f"eq=contrast=1.06:saturation=1.12,format=yuv420p")
-        subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-ss", f"{s.get('ss', 0)}", "-i", s["clip"], "-an",
-                        "-vf", vf, "-c:v", "libx264", "-preset", "veryfast", "-crf", "20", o], check=True)
-        parts.append(o)
+        shots = s.get("shots") or [{"clip": s["clip"], "ss": s.get("ss", 0), "fx": s.get("fx", 0.5)}]
+        wts = [float(sh.get("w", 1)) for sh in shots]; tw = sum(wts)
+        for k, sh in enumerate(shots):
+            o = f"{tmp}/s{i}_{k}.mp4"
+            d = s["dur"] * wts[k] / tw
+            clip = sh["clip"]; fx = sh.get("fx", 0.5); sw0 = 1.0
+            if clip.lower().endswith(PHOTO):
+                im = Image.open(clip).convert("RGB"); iw, ih = im.size
+                cw_ = min(iw, int(ih * 9 / 16)); x0 = max(0, min(iw - cw_, int(fx * iw - cw_ / 2)))
+                im = im.crop((x0, 0, x0 + cw_, ih)).resize((1620, 2880), Image.LANCZOS)
+                pf = f"{tmp}/p{i}_{k}.png"; im.save(pf)
+                z0, z1 = (1.0, 1.22) if (i + k) % 2 == 0 else (1.22, 1.0)
+                n = int(d * FPS) + 2
+                vf = (f"zoompan=z='{z0}+({z1}-{z0})*on/{n}':x='(iw-iw/zoom)/2':y='(ih-ih/zoom)/2':d={n}:s={W}x{H}:fps={FPS},"
+                      f"trim=duration={d:.3f},setpts=PTS-STARTPTS,eq=contrast=1.06:saturation=1.1,format=yuv420p")
+                subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", pf, "-an", "-vf", vf, "-c:v", "libx264",
+                                "-preset", "veryfast", "-crf", "20", o], check=True)
+            else:
+                pr = subprocess.run(["ffprobe", "-v", "error", "-select_streams", "v:0", "-show_entries",
+                                     "stream=width,height,duration", "-of", "json", clip], capture_output=True, text=True)
+                st = json.loads(pr.stdout)["streams"][0]; cw, ch = int(st["width"]), int(st["height"])
+                avail = max(0.5, float(st["duration"]) - sh.get("ss", 0))
+                slow = max(1.0, min(1.35, d / avail))
+                sh_ = 2100; sw = int(cw * sh_ / ch) // 2 * 2
+                span = sw - W
+                x0 = max(0, min(span, int(fx * sw - W / 2)))
+                pan = 70 * (1 if (i + k) % 2 == 0 else -1)
+                xe = f"max(0,min({span},{x0}+({pan})*t/{d:.2f}))"
+                vf = (f"setpts={slow:.3f}*PTS,scale={sw}:{sh_},crop={W}:{H}:x='{xe}':y='({sh_}-{H})/2',"
+                      f"fps={FPS},tpad=stop_mode=clone:stop_duration=2,trim=duration={d:.3f},setpts=PTS-STARTPTS,"
+                      f"eq=contrast=1.06:saturation=1.12,format=yuv420p")
+                subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-ss", f"{sh.get('ss', 0)}", "-i", clip, "-an",
+                                "-vf", vf, "-c:v", "libx264", "-preset", "veryfast", "-crf", "20", o], check=True)
+            parts.append(o)
     lst = f"{tmp}/list.txt"; open(lst, "w").write("".join(f"file '{p}'\n" for p in parts))
     cat = f"{tmp}/cat.mp4"
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", lst, "-c", "copy", cat], check=True)
