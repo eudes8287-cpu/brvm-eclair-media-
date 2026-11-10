@@ -27,3 +27,18 @@ Règle de décision : après 3 vidéos d'un même format sous 300 vues chacune, 
 
 ## Compte anglais
 À partir de la 3e semaine : même moteur avec `"lang":"en"` (voix `af_heart`, à tester). Compte et canal séparés, à créer et connecter par Eudes (une seule fois).
+
+
+# PROCÉDURE v2 (depuis le 10/11/2026) — format sujet unique, publication via Buffer
+Remplace les étapes 3 à 8 ci-dessus pour les vidéos de type « sujet unique ». Les règles absolues restent valables (aucun Facebook, son obligatoire, 2 sources par fait, aucun contenu BRVM, sujets sensibles interdits).
+1. Sujet : prochaine ligne « à faire » de la table « SEMAINE TEST » de PLAN.md pour la date du jour. Si la ligne du jour est déjà « fait », s'arrêter.
+2. Faits : 6 à 8 faits sur UN sujet (singularités, secrets, histoire, actualité), chacun confirmé par 2 sources lues (WebSearch puis WebFetch). Écarter tout fait à une seule source ou aux sources divergentes. Noter les sources dans LOG.md.
+3. Clips (Pixabay, libres pour usage commercial) : `orshot_search_stock_media` (type video), puis OBLIGATOIREMENT `orshot_use_stock_media` sur chaque ref, puis `curl -o clip.mp4 https://storage.orshot.com/stock/pixabay/video/ID.mp4` (vérifier avec ffprobe ; relancer si timeout). Regarder une image de chaque clip : l'image doit correspondre au fait raconté (pas de tour Eiffel pour le Louvre). Prévoir 8 à 9 segments (accroche, 6 à 7 faits, conclusion), un clip par segment, 5 à 8 s chacun.
+4. Spec : copier `specs/002_paris_6_secrets.json`, champs par segment : clip, ss (début en s), fx (centre du cadrage 0..1), num, title, big (chiffre ou mot-clé affiché), voice (texte parlé : nombres écrits en toutes lettres), caption (texte affiché). Voix de 14 mots maximum par fait (environ 5 à 7 s). Phrase finale : appel au commentaire + abonnement.
+5. Rendu : `python3 -I synthese/scripts/deep_dive.py spec.json synthese/videos/NNN_nom.mp4` (environ 4 à 5 min ; voix Kokoro, musique originale, sous-titres karaoké).
+6. Contrôle : ffprobe (1080x1920, h264+aac), volumedetect (moyenne autour de -14 dB), silencedetect (aucun silence), 6 images à regarder (texte lisible, hors des 380 px du bas). Pas de publication sans son.
+7. Dépôt : `git fetch origin main`, rebase, add, commit, push sur main. URL : `https://raw.githubusercontent.com/eudes8287-cpu/brvm-eclair-media-/main/synthese/videos/NNN_nom.mp4`.
+8. Publication via **Buffer** (Metricool a atteint son quota gratuit le 10/11) : Zapier `execute_zapier_write_action`, selected_api `BufferCLIAPI`, action `update`, tool_name `buffer_add_to_queue`, params `{"method":"schedule","organizationId":"6ad18d12b6b63bd0b2f68c68","channelId":"6ad1b505778b240e2f24f41c","dynamic_properties":{"attachment":"video","scheduling_type":"direct","scheduled_at":"AAAA-MM-JJT12:00:00+00:00","text":"<légende>","video":"<URL>"}}`. Si l'heure est passée, `method` = `share_now` (sans `scheduled_at`). Le canal `6ad1b505778b240e2f24f41c` est @eudes9972 (Synthèse) ; ne JAMAIS utiliser `6ad18f13778b240e2f22de5c` (brvm.clair) ni la page Facebook. Légende : accroche + question d'engagement + 6 à 9 hashtags (#fyp #pourtoi + thème + #synthese). Buffer ne gère pas l'indicateur « contenu généré par IA ».
+9. Vérification : relire les éléments envoyés (`buffer_new_sent_item`, organizationId + channelId en dynamic_properties) ; le résultat est volumineux : l'enregistrer dans un fichier et lire les 3 premiers éléments en Python. Noter le lien TikTok et les statistiques (vues, j'aime, commentaires) dans LOG.md.
+10. Mise à jour : ligne du jour de PLAN.md passée à « fait », ligne ajoutée à LOG.md, commit et push.
+Chaque lundi : relever via Buffer les statistiques des vidéos de la semaine (même lecture que l'étape 9), écrire un bilan de 5 lignes dans LOG.md et ajuster PLAN.md.

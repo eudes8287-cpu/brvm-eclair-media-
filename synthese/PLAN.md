@@ -83,3 +83,20 @@ Les faits sont à vérifier au moment de la production (voir PROCEDURE.md). Les 
 Jours 1 à 7 : formats déjà disponibles (CARTE, CHIFFRE, COMPARAISON) : sujets 2, 5, 6, 7, 8, 9, 11, 12, 13, 16, 17, 18, 19, 21, 22, 23, 24, 25, 28, 29, 30, 31, 36, 37, 38, 39, 40, 41, 42, 43.
 En parallèle, développer dans le moteur les scènes CLASSEMENT (barres animées), QUIZ (compte à rebours puis réponse) et FRISE ; elles débloquent les sujets restants (3, 4, 10, 14, 15, 20, 26, 33, 44 à 46, 48, 49, 51 à 60).
 Chaque lundi, réordonner d'après les statistiques (voir PROCEDURE.md, boucle d'amélioration).
+
+## SEMAINE TEST (10 au 16 novembre 2026) — format « sujet unique », 1 vidéo par jour à 12 h (Abidjan), tout en français
+Hypothèse d'Eudes (validée le 09/11) : une vidéo sur un seul sujet, avec des faits, des singularités et de l'histoire, retient mieux qu'une liste de 7 éléments. Durées : 45 à 52 s les 4 premiers jours, 60 à 65 s les 3 derniers (seuil de monétisation TikTok à vérifier). Référence de comparaison : diaporamas de 24 s = 118 à 161 vues ; « Le monde en 24 secondes » = 1 503 ; Vatican (carte + chiffre, 21 s) = 444.
+Statut : « à faire » ou « fait » (la tâche quotidienne lit cette table pour savoir quoi produire).
+
+| Date | Sujet | Type | Durée visée | Statut |
+|---|---|---|---|---|
+| 10/11 00 h 08 (à la demande) | Paris : 6 secrets | Ville | 52 s | fait |
+| 10/11 12 h | L'éléphant d'Afrique | Animal | 45-50 s | à faire |
+| 11/11 12 h | Le Japon | Pays | 45-50 s | à faire |
+| 12/11 12 h | Le cacao, or brun de la Côte d'Ivoire | Fruit / économie | 45-50 s | à faire |
+| 13/11 12 h | Napoléon Bonaparte (histoire) | Personnalité décédée | 50 s | à faire |
+| 14/11 12 h | La Lune | Espace | 60-65 s | à faire |
+| 15/11 12 h | Abidjan | Ville | 60-65 s | à faire |
+| 16/11 12 h | Les pyramides de Gizeh | Histoire | 60-65 s | à faire |
+
+Bilan le lundi 16/11 (ou 17/11) : comparer vues, j'aime, commentaires, taux de visionnage complet (si disponible) de ces 8 vidéos aux références ci-dessus, puis décider : (a) généraliser le format sujet unique, (b) garder 45-50 s ou 60 s, (c) ouvrir l'anglais.
