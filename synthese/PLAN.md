@@ -91,7 +91,7 @@ Statut : « à faire » ou « fait » (la tâche quotidienne lit cette table pou
 | Date | Sujet | Type | Durée visée | Statut |
 |---|---|---|---|---|
 | 10/11 00 h 08 (à la demande) | Paris : 6 secrets | Ville | 52 s | fait |
-| 10/11 12 h | L'éléphant d'Afrique | Animal | 45-50 s | à faire |
+| 10/11 12 h | L'éléphant d'Afrique | Animal | 45 s | fait (publié 12:02 UTC) |
 | 11/11 12 h | Le Japon | Pays | 45-50 s | à faire |
 | 12/11 12 h | Le cacao, or brun de la Côte d'Ivoire | Fruit / économie | 45-50 s | à faire |
 | 13/11 12 h | Napoléon Bonaparte (histoire) | Personnalité décédée | 50 s | à faire |
