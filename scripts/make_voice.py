@@ -32,7 +32,7 @@ def chunks(text):
             if cur: out.append(cur)
         else: out.append(s)
     return out
-def synth(text,out,speed=1.03):
+def synth_kokoro(text,out,speed=1.03):
     import numpy as np
     ensure()
     from kokoro_onnx import Kokoro; import soundfile as sf
@@ -49,4 +49,23 @@ def synth(text,out,speed=1.03):
     flt="highpass=f=90,equalizer=f=200:t=q:w=1:g=2.0,equalizer=f=3200:t=q:w=1:g=1.5,equalizer=f=6800:t=q:w=1.5:g=-3.5,acompressor=threshold=-21dB:ratio=2.2:attack=10:release=160,aecho=0.9:0.55:22:0.05,loudnorm=I=-16:TP=-1.5"
     subprocess.run(["ffmpeg","-y","-loglevel","error","-i",raw,"-af",flt,"-ar","24000",out],check=True); os.remove(raw)
     import soundfile as sf2; d=sf2.info(out); return d.frames/d.samplerate
+EDGE_VOICE=os.environ.get("EDGE_VOICE","fr-FR-RemyMultilingualNeural")
+def synth_edge(text,out,speed=1.0):
+    # Voix d'homme neuronale (Microsoft Edge TTS). Le proxy de l'agent impose son bundle CA.
+    import asyncio,certifi,re
+    ca="/root/.ccr/ca-bundle.crt"
+    if os.path.exists(ca): certifi.where=lambda:ca
+    try: import edge_tts
+    except ImportError: subprocess.run([sys.executable,"-m","pip","install","--break-system-packages","-q","edge-tts"],check=True); import edge_tts
+    rate="%+d%%"%int(round((speed-1.0)*100))
+    mp3=out+".mp3"
+    async def go(): await edge_tts.Communicate(text,EDGE_VOICE,rate=rate).save(mp3)
+    asyncio.run(go())
+    subprocess.run(["ffmpeg","-y","-loglevel","error","-i",mp3,"-af","loudnorm=I=-16:TP=-1.5","-ar","24000","-ac","1",out],check=True); os.remove(mp3)
+    import soundfile as sf2; d=sf2.info(out); return d.frames/d.samplerate
+def synth(text,out,speed=1.0):
+    if os.environ.get("VOICE_ENGINE","edge")=="kokoro": return synth_kokoro(text,out,speed if speed!=1.0 else 1.03)
+    try: return synth_edge(text,out,speed)
+    except Exception as e:
+        print("edge-tts indisponible, repli Kokoro:",e,file=sys.stderr); return synth_kokoro(text,out,1.03)
 if __name__=="__main__": print(synth(sys.argv[1],sys.argv[2],float(sys.argv[3]) if len(sys.argv)>3 else 0.93))
