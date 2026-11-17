@@ -3,7 +3,7 @@
 #   pastille de rubrique, blocs « EN CLAIR » / « À RETENIR », mention légale en bas à droite.
 # VARIABLE : theme, layout, format, deco.
 # spec: {"theme":"navy|orange|light|teal|sand|violet|emerald|wine","layout":"standard|bignumber|qa|steps|versus|poster",
-#  "format":"square|portrait","deco":"bolt|rings|dots|diag|none","tag":"..","title":"..","text":"..","bullets":[..],
+#  "format":"square|portrait|story(1080x1920, stories TikTok)","deco":"bolt|rings|dots|diag|none","tag":"..","title":"..","text":"..","bullets":[..],
 #  "clair":"..","retenir":"..","number":"..","label":"..","q":"..","a":"..","source":"..","right":"(date: seulement pour les clôtures)",
 #  "a_title","a_text","b_title","b_text"  # versus
 # }
@@ -18,7 +18,7 @@ THEMES={"navy":dict(bg=NAVY,fg=OFF,acc=ORANGE,card=NAVY2,mut=MUTED,on_acc=NAVY),
 "violet":dict(bg=(38,26,92),fg=OFF,acc=ORANGE,card=(58,42,126),mut=(176,166,222),on_acc=NAVY),
 "emerald":dict(bg=(6,62,46),fg=OFF,acc=(255,184,40),card=(12,88,66),mut=(150,208,186),on_acc=(6,62,46)),
 "wine":dict(bg=(82,22,44),fg=OFF,acc=ORANGE,card=(110,36,64),mut=(222,170,186),on_acc=NAVY)}
-s=json.load(open(sys.argv[1])); W=1080; H=1350 if s.get("format")=="portrait" else 1080
+s=json.load(open(sys.argv[1])); W=1080; H={"portrait":1350,"story":1920}.get(s.get("format"),1080)
 T=THEMES[s.get("theme","navy")]; img=Image.new("RGB",(W,H),T["bg"]); d=ImageDraw.Draw(img)
 def mix(a,b,k): return tuple(int(a[i]+(b[i]-a[i])*k) for i in range(3))
 DC=mix(T["bg"],T["fg"],0.07)
@@ -53,7 +53,8 @@ def title_block(y,maxsz=130,center=False):
         x=(W-tw(d,l,font("ExtraBold",size)))//2 if center else 60
         d.text((x,y),l,font=font("ExtraBold",size),fill=T["fg"]); y+=int(size*1.15)
     return y
-tag(150,cx=(lay=="poster")); y=240
+OFF0=450 if s.get("format")=="story" else 0
+tag(150+OFF0,cx=(lay=="poster")); y=240+OFF0
 if lay=="bignumber":
     size=170; f=font("ExtraBold",size)
     while tw(d,s["number"],f)>960 and size>70: size-=10; f=font("ExtraBold",size)
