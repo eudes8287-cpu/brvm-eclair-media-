@@ -33,3 +33,6 @@ Dim : rien
 
 ## Règles
 2 sources lues par fait ; mention légale ; pas d'IRVM/employeur ; Sonatel fractionnée 10 pour 1 ; voix d'homme (Remy) ; vidéos 25-35 s ; thèmes variés.
+
+## RÈGLE DE SOURCE (ajoutée le 20/11/2026 après erreur)
+Tout chiffre de marché (indices, variation annuelle, capitalisation, secteurs) vient du BOC lu directement : https://bfin.brvm.org/boc/BOC_JOUR/BOC_AAAAMMJJ.pdf. Les pages brvm.org/fr/indices et les résumés de WebFetch peuvent afficher des données anciennes (cache) : ne jamais les utiliser seuls. Erreur du 18-19/11 : « Composite +1,70 % » et « Télécoms en tête +3,44 % » étaient faux (BOC : Composite +42,86 % annuel ; Services publics +95,87 % en tête).
